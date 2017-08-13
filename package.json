@@ -1,0 +1,23 @@
+{
+  "name": "nodejs-mysql-authentication",
+  "version": "1.0.0",
+  "description": "nodejs login with jwt token",
+  "main": "server.js",
+  "scripts": {
+    "test": "node server.js"
+  },
+  "keywords": [
+    "nodejs",
+    "jwt",
+    "passport",
+    "express"
+  ],
+  "author": "Devesh Vyas",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "cors": "^2.8.4",
+    "express": "^4.15.4",
+    "mysql": "^2.14.1"
+  }
+}
