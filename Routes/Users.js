@@ -66,7 +66,7 @@ users.post('/login', function(req, res) {
                     if (rows.length > 0) {
                         if (rows[0].password == password) {
                             let token = jwt.sign(rows[0], process.env.SECRET_KEY, {
-                                expiresIn: 3600000
+                                expiresIn: 1440
                             });
                             appData.error = 0;
                             appData["token"] = token;
@@ -131,10 +131,9 @@ users.post('/login', function(req, res) {
     });
 });
 
-users.get('/getUsers', function(req, res) {
-
-    var appData = {};
+users.use(function(req, res, next) {
     var token = req.body.token || req.headers['token'];
+    var appData = {};
     if (token) {
         jwt.verify(token, process.env.SECRET_KEY, function(err) {
             if (err) {
@@ -142,32 +141,39 @@ users.get('/getUsers', function(req, res) {
                 appData["data"] = "Token is invalid";
                 res.status(500).json(appData);
             } else {
-                database.connection.getConnection(function(err, connection) {
-                    if (err) {
-                        appData["error"] = 1;
-                        appData["data"] = "Internal Server Error";
-                        res.status(500).json(appData);
-                    } else {
-                        connection.query('SELECT *FROM users', function(err, rows, fields) {
-                            if (!err) {
-                                appData["error"] = 0;
-                                appData["data"] = rows;
-                                res.status(200).json(appData);
-                            } else {
-                                appData["data"] = "No data found";
-                                res.status(204).json(appData);
-                            }
-                        });
-                        connection.release();
-                    }
-                });
+                next();
             }
         });
     } else {
         appData["error"] = 1;
         appData["data"] = "Please send a token";
-        res.status(200).json(appData);
+        res.status(403).json(appData);
     }
+});
+
+users.get('/getUsers', function(req, res) {
+
+    var appData = {};
+
+    database.connection.getConnection(function(err, connection) {
+        if (err) {
+            appData["error"] = 1;
+            appData["data"] = "Internal Server Error";
+            res.status(500).json(appData);
+        } else {
+            connection.query('SELECT *FROM users', function(err, rows, fields) {
+                if (!err) {
+                    appData["error"] = 0;
+                    appData["data"] = rows;
+                    res.status(200).json(appData);
+                } else {
+                    appData["data"] = "No data found";
+                    res.status(204).json(appData);
+                }
+            });
+            connection.release();
+        }
+    });
 });
 
 module.exports = users;
